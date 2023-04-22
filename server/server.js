@@ -4,9 +4,9 @@ if (process.env.NODE_ENV != "production") {
 }
 // import dependencies
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const connectToDb = require("./src/config/connectToDb");
 const cors = require("cors");
-
 const {
   fetchNotes,
   fetchNote,
@@ -14,31 +14,40 @@ const {
   updateNote,
   deleteNote,
 } = require("./src/controllers/notesController");
+
+const {
+  signup,
+  login,
+  logout,
+  checkAuth,
+} = require("./src/controllers/usersController");
+const requireAuth = require("./src/middleware/requireAuth");
 const app = express();
 
 //middleware
 app.use(express.json());
-app.use(cors());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
 
 // connect to db
 connectToDb();
 
-app.get("/", (req, res) => {
-  res.json("hello world");
-});
-// get all notes
+app.post("/signup", signup);
+app.post("/login", login);
+app.get("/logout", logout);
+app.get("/check-auth", requireAuth, checkAuth);
+
 app.get("/notes", fetchNotes);
-
-// create note
+app.get("/notes", fetchNotes);
+app.get("/notes", fetchNotes);
 app.post("/notes", createNote);
-
-//get single note
 app.get("/notes/:id", fetchNote);
-
-// update note
 app.put("/notes/:id", updateNote);
-
-// delete note
 app.delete("/notes/:id", deleteNote);
 
 app.listen(process.env.PORT, () => console.log("server started"));
